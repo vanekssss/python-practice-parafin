@@ -3,6 +3,7 @@
 Student: Ivan Parafin
 Group: IT-32
 Course: Python programming, semester 1
+email: ivanparaaaaafin@gmail.com
 
 ## Contents
 
