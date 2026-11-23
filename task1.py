@@ -1,148 +1,55 @@
-from datetime import datetime
-import json
-from pathlib import Path
+class Money:
+    def __init__(self, amount, currency="UAH"):
+        self.cents = round(amount * 100)
+        self.currency = currency
 
+    def __add__(self, other):
+        if not isinstance(other, Money):
+            return NotImplemented
+        if self.currency != other.currency:
+            raise ValueError("different currencies")
+        return Money((self.cents + other.cents) / 100, self.currency)
 
-class Expense:
-    currency = "UAH"
-    created_count = 0
+    def __sub__(self, other):
+        if not isinstance(other, Money):
+            return NotImplemented
+        if self.currency != other.currency:
+            raise ValueError("different currencies")
+        return Money((self.cents - other.cents) / 100, self.currency)
 
-    def __init__(self, date, category, amount, comment=""):
-        self.date = date
-        self.category = category
-        self.amount = amount
-        self.comment = comment
-        Expense.created_count += 1
+    def __mul__(self, number):
+        if not isinstance(number, (int, float)):
+            return NotImplemented
+        return Money((self.cents * number) / 100, self.currency)
 
-    @staticmethod
-    def is_valid_date(text):
-        try:
-            datetime.strptime(text, "%Y-%m-%d")
-            return True
-        except ValueError:
-            return False
+    def __eq__(self, other):
+        if not isinstance(other, Money):
+            return NotImplemented
+        return self.currency == other.currency and self.cents == other.cents
 
-    @staticmethod
-    def is_valid_amount(value):
-        try:
-            return float(value) >= 0
-        except (ValueError, TypeError):
-            return False
+    def __lt__(self, other):
+        if not isinstance(other, Money):
+            return NotImplemented
+        if self.currency != other.currency:
+            raise ValueError("different currencies")
+        return self.cents < other.cents
 
-    @classmethod
-    def from_csv_line(cls, line):
-        parts = line.strip().split(";", 3)
-        if len(parts) != 4:
-            print(f"Пропущено некоректний CSV-рядок: {line.strip()}")
-            return None
+    def __str__(self):
+        return f"{self.cents / 100:.2f} {self.currency}"
 
-        date, category, amount, comment = parts
-
-        if not cls.is_valid_date(date) or not cls.is_valid_amount(amount):
-            print(f"Пропущено некоректний CSV-рядок: {line.strip()}")
-            return None
-
-        return cls(date, category, float(amount), comment)
-
-    @classmethod
-    def from_dict(cls, data):
-        date = data.get("date", "")
-        category = data.get("category", "")
-        amount = data.get("amount")
-        comment = data.get("comment", "")
-
-        if not cls.is_valid_date(date) or not cls.is_valid_amount(amount):
-            print(f"Пропущено некоректний JSON-запис: {data}")
-            return None
-
-        return cls(date, category, float(amount), comment)
-
-    @classmethod
-    def from_input(cls):
-        date = input("Дата (YYYY-MM-DD): ")
-        category = input("Категорія: ")
-        amount = input("Сума: ")
-        comment = input("Коментар: ")
-
-        if not cls.is_valid_date(date) or not cls.is_valid_amount(amount):
-            print("Помилка: неправильна дата або сума.")
-            return None
-
-        return cls(date, category, float(amount), comment)
-
-    @classmethod
-    def set_currency(cls, code):
-        cls.currency = code
-
-    def show(self):
-        print(
-            f"{self.date} | {self.category:<14} | "
-            f"{self.amount:8.2f} {self.currency} | {self.comment}"
-        )
-
-
-def load_csv(path):
-    result = []
-    with open(path, "r", encoding="utf-8") as file:
-        for line in file:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            expense = Expense.from_csv_line(line)
-            if expense is not None:
-                result.append(expense)
-    return result
-
-
-def load_json(path):
-    with open(path, "r", encoding="utf-8") as file:
-        data = json.load(file)
-
-    result = []
-    for item in data:
-        expense = Expense.from_dict(item)
-        if expense is not None:
-            result.append(expense)
-    return result
-
-
-def main():
-    print("Ivan Parafin, IT-32")
-    folder = Path(__file__).resolve().parent / "data"
-
-    csv_expenses = load_csv(folder / "expenses.csv")
-    json_expenses = load_json(folder / "expenses.json")
-
-    print("\nВитрати, завантажені з CSV:")
-    for expense in csv_expenses:
-        expense.show()
-
-    print("\nВитрати, завантажені з JSON:")
-    for expense in json_expenses:
-        expense.show()
-
-    print("\nПорівняння:")
-    print(f"Кількість з CSV: {len(csv_expenses)}")
-    print(f"Кількість з JSON: {len(json_expenses)}")
-    print(f"Дані однакові: {len(csv_expenses) == len(json_expenses)}")
-
-    birthday = Expense.from_dict({
-        "date": "2009-07-07",
-        "category": "birthday",
-        "amount": 0,
-        "comment": "дата народження"
-    })
-    print("\nПерсональні дані:")
-    print(f"Дата народження: {birthday.date}")
-
-    print("\nПеревірка статичних методів:")
-    print(Expense.is_valid_date("2026-02-30"))
-    print(Expense.is_valid_amount("125.50"))
-
-    Expense.set_currency("UAH")
-    print(f"\nВалюта для всіх об'єктів: {Expense.currency}")
-    print(f"Створено об'єктів: {Expense.created_count}")
+    def __repr__(self):
+        return f"Money({self.cents / 100:.2f}, '{self.currency}')"
 
 
 if __name__ == "__main__":
-    main()
+    print(Money(0.1) + Money(0.2))
+    print(Money(0.1) + Money(0.2) == Money(0.3))
+    print(Money(10) - Money(3.5))
+    print(Money(10) * 2)
+    print(repr(Money(25.5)))
+    print(0.1 + 0.2 == 0.3)
+
+    try:
+        print(Money(10) + Money(5, "USD"))
+    except ValueError as error:
+        print(type(error).__name__ + ":", error)
