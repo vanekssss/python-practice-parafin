@@ -1,30 +1,58 @@
-import requests
-import sys
+import csv
+from pathlib import Path
 
-print("Ivan Parafin, IT-32")
 
-URL = "https://api.open-meteo.com/v1/forecast"
+class Expense:
+    def __init__(self, date, category, amount):
+        self.date = date
+        self.category = category
+        self.amount = float(amount)
 
-params = {
-    "latitude": 50.7472,
-    "longitude": 25.3254,
-    "current": "temperature_2m,wind_speed_10m"
-}
+    def monthly_cost(self):
+        return self.amount
 
-try:
-    response = requests.get(URL, params=params, timeout=10)
-    response.raise_for_status()
-    data = response.json()
 
-    current = data["current"]
-    temperature = current["temperature_2m"]
-    wind = current["wind_speed_10m"]
+class RecurringExpense(Expense):
+    def __init__(self, date, category, amount, times_per_month):
+        super().__init__(date, category, amount)
+        self.times_per_month = times_per_month
 
-    print(f"Lutsk (50.7472, 25.3254): {temperature} C, wind {wind} km/h")
+    def monthly_cost(self):
+        return self.amount * self.times_per_month
 
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
-except (KeyError, ValueError) as error:
-    print(f"Помилка обробки відповіді: {error}", file=sys.stderr)
-    sys.exit(1)
+
+class SharedExpense(Expense):
+    def __init__(self, date, category, amount, people):
+        super().__init__(date, category, amount)
+        self.people = people
+
+    def monthly_cost(self):
+        return self.amount / self.people
+
+
+file_path = Path(__file__).parent / "data" / "expenses.csv"
+expenses = []
+
+with open(file_path, "r", encoding="utf-8-sig", newline="") as file:
+    reader = csv.DictReader(file, delimiter=";")
+
+    for row in reader:
+        category = row["category"]
+        amount = float(row["amount"].replace(",", "."))
+        date = row["date"]
+
+        if category == "Transport":
+            expenses.append(RecurringExpense(date, category, amount, 8))
+        elif category == "Mobile":
+            expenses.append(RecurringExpense(date, category, amount, 1))
+        elif category in ("Housing", "Groceries"):
+            expenses.append(SharedExpense(date, category, amount, 2))
+
+total = 0
+
+for expense in expenses:
+    cost = expense.monthly_cost()
+    total += cost
+    print(f"{expense.date} | {expense.category}: {cost:.2f} UAH")
+
+print(f"Total monthly cost: {total:.2f} UAH")

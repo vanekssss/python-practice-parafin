@@ -1,6 +1,6 @@
-date,category,amount,comment
-2026-11-01,food,250,groceries
-2026-11-03,transport,45,bus fare
-2026-11-05,fun,8,small snack
-2026-11-08,food,1200,monthly groceries
-2026-11-10,transport,15,metro
+date;category;amount;comment
+2026-11-17;Transport;20;Bus
+2026-11-20;Transport;20;Bus
+2026-11-18;Mobile;200;Mobile communication
+2026-11-19;Housing;6000;Shared housing payment
+2026-11-21;Groceries;1200;Shared groceries

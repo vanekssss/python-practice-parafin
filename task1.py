@@ -1,23 +1,32 @@
-import requests
-import sys
+class Person:
+    def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
 
-print("Ivan Parafin, IT-32")
+    def describe(self):
+        return f"{self.name} {self.surname}"
 
-URL = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange"
 
-try:
-    response = requests.get(URL, params={"json": ""}, timeout=10)
-    response.raise_for_status()
-    rates = response.json()
+class Student(Person):
+    def __init__(self, name, surname, group):
+        super().__init__(name, surname)
+        self.group = group
 
-    print("status:", response.status_code)
-    print("Content-Type:", response.headers.get("Content-Type"))
-    print("currencies:", len(rates))
+    def describe(self):
+        return f"{super().describe()}, {self.group}"
 
-    for item in rates:
-        if item["cc"] == "USD" or item["cc"] == "EUR":
-            print(item["cc"], item["rate"], item["exchangedate"])
 
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
+class GroupLeader(Student):
+    def __init__(self, name, surname, group, phone):
+        super().__init__(name, surname, group)
+        self.phone = phone
+
+    def describe(self):
+        return f"{super().describe()}, group leader, {self.phone}"
+
+
+student = Student("Ivan", "Parafin", "IT-32")
+leader = GroupLeader("Group", "Leader", "IT-32", "+380 00 000 00 00")
+
+print(student.describe())
+print(leader.describe())

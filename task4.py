@@ -1,40 +1,65 @@
-import requests
-import sys
+import csv
+from pathlib import Path
 
-print("Ivan Parafin, IT-32")
 
-mode = "connection"
-if len(sys.argv) > 1:
-    mode = sys.argv[1]
+class Expense:
+    def __init__(self, date, category, amount):
+        self.date = date
+        self.category = category
+        self.amount = float(amount)
 
-try:
-    if mode == "connection":
-        url = "https://this-domain-does-not-exist.invalid"
-        timeout = 10
-    elif mode == "http":
-        url = "https://bank.gov.ua/this-page-does-not-exist"
-        timeout = 10
-    elif mode == "timeout":
-        url = "https://httpbin.org/delay/3"
-        timeout = 0.001
-    else:
-        print("Використання: python task4.py connection|http|timeout",
-              file=sys.stderr)
-        sys.exit(1)
+    def monthly_cost(self):
+        return self.amount
 
-    response = requests.get(url, timeout=timeout)
-    response.raise_for_status()
-    print("Запит виконано успішно")
 
-except requests.ConnectionError as error:
-    print(f"Помилка з'єднання: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.Timeout as error:
-    print(f"Час очікування вичерпано: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.HTTPError as error:
-    print(f"HTTP-помилка: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
+class RecurringExpense(Expense):
+    def __init__(self, date, category, amount, times_per_month):
+        super().__init__(date, category, amount)
+        self.times_per_month = times_per_month
+
+    def monthly_cost(self):
+        return self.amount * self.times_per_month
+
+
+class SharedExpense(Expense):
+    def __init__(self, date, category, amount, people):
+        super().__init__(date, category, amount)
+        self.people = people
+
+    def monthly_cost(self):
+        return self.amount / self.people
+
+
+class YearlyExpense(Expense):
+    def monthly_cost(self):
+        return self.amount / 12
+
+
+file_path = Path(__file__).parent / "data" / "expenses.csv"
+expenses = []
+
+with open(file_path, "r", encoding="utf-8-sig", newline="") as file:
+    reader = csv.DictReader(file, delimiter=";")
+
+    for row in reader:
+        category = row["category"]
+        amount = float(row["amount"].replace(",", "."))
+        date = row["date"]
+
+        if category == "Transport":
+            expenses.append(RecurringExpense(date, category, amount, 8))
+        elif category == "Mobile":
+            expenses.append(RecurringExpense(date, category, amount, 1))
+        elif category in ("Housing", "Groceries"):
+            expenses.append(SharedExpense(date, category, amount, 2))
+
+expenses.append(YearlyExpense("2026-11-23", "Yearly subscription", 1200))
+
+total = 0
+
+for expense in expenses:
+    cost = expense.monthly_cost()
+    total += cost
+    print(f"{expense.category}: {cost:.2f} UAH")
+
+print(f"Total monthly cost including yearly subscription: {total:.2f} UAH")

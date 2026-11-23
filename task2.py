@@ -1,40 +1,50 @@
-import csv
-import requests
-import sys
+class Person:
+    def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
 
-print("Ivan Parafin, IT-32")
+    def describe(self):
+        return f"{self.name} {self.surname}"
 
-URL = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange"
 
-def get_rate(code, timeout=10):
-    response = requests.get(
-        URL,
-        params={"valcode": code, "json": ""},
-        timeout=timeout
-    )
-    response.raise_for_status()
-    data = response.json()
-    return data[0]["rate"], data[0]["exchangedate"]
+class Student(Person):
+    def __init__(self, name, surname, group):
+        super().__init__(name, surname)
+        self.group = group
 
-try:
-    total = 0
+    def describe(self):
+        return f"{super().describe()}, {self.group}"
 
-    with open("data/expenses.csv", "r", encoding="utf-8", newline="") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            total += float(row["amount"])
 
-    usd_rate, rate_date = get_rate("USD")
-    eur_rate, eur_date = get_rate("EUR")
+class GroupLeader(Student):
+    def __init__(self, name, surname, group, phone):
+        super().__init__(name, surname, group)
+        self.phone = phone
 
-    print("rate date:", rate_date)
-    print(f"total: {total:.2f} UAH")
-    print(f"USD: {total / usd_rate:.2f}")
-    print(f"EUR: {total / eur_rate:.2f}")
+    def describe(self):
+        return f"{super().describe()}, group leader, {self.phone}"
 
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
-except (OSError, ValueError, KeyError, IndexError) as error:
-    print(f"Помилка обробки даних: {error}", file=sys.stderr)
-    sys.exit(1)
+
+person = Person("Ivan", "Parafin")
+student = Student("Ivan", "Parafin", "IT-32")
+leader = GroupLeader("Group", "Leader", "IT-32", "+380 00 000 00 00")
+
+objects = [person, student, leader]
+classes = [Person, Student, GroupLeader]
+
+print("isinstance:")
+for obj in objects:
+    for cls in classes:
+        print(f"{obj.__class__.__name__} is {cls.__name__}: {isinstance(obj, cls)}")
+
+print("\nissubclass:")
+for child in classes:
+    for parent in classes:
+        print(f"{child.__name__} is subclass of {parent.__name__}: "
+              f"{issubclass(child, parent)}")
+
+print("\nGroupLeader MRO:")
+for cls in GroupLeader.__mro__:
+    print(cls.__name__)
+
+print("\nDescribe:", leader.describe())
