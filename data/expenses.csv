@@ -1,6 +1,13 @@
-date,category,amount,comment
-2026-11-01,food,250,groceries
-2026-11-03,transport,45,bus fare
-2026-11-05,fun,8,small snack
-2026-11-08,food,1200,monthly groceries
-2026-11-10,transport,15,metro
+# date;category;amount;note
+2026-11-16;food;145.50;lunch
+2026-11-16;transport;32.00;bus
+2026-11-17;groceries;286.40;supermarket
+2026-11-17;mobile;150.00;mobile top-up
+2026-11-18;food;98.00;breakfast
+2026-11-18;transport;40.00;taxi
+2026-11-19;groceries;412.75;products
+2026-11-19;entertainment;180.00;cinema
+2026-11-20;food;125.00;lunch
+2026-11-21;transport;32.00;bus
+2026-11-21;education;220.00;study materials
+2026-11-22;groceries;365.30;supermarket
