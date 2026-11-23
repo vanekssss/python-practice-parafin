@@ -1,51 +1,23 @@
-import json
-import os
-import sys
-from datetime import datetime
-import requests
+class Wallet:
+    def __init__(self, owner, balance):
+        self.owner = owner
+        self.balance = balance
 
-print("Ivan Parafin, IT-32")
+    def __del__(self):
+        print(f"wallet of {self.owner} deleted")
 
-URL = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange"
-CACHE_FILE = "cache/rates.json"
 
-try:
-    rates = None
-    source = ""
+print("First example")
+wallet = Wallet("Ivan Parafin", 1500)
+del wallet
 
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, "r", encoding="utf-8") as file:
-            cache = json.load(file)
+print("\nSecond example")
+wallet = Wallet("Ivan Parafin", 1500)
+other = wallet
+del wallet
+print("The other reference still exists")
+del other
 
-        saved_time = datetime.fromisoformat(cache["saved_at"])
-        age = (datetime.now() - saved_time).total_seconds()
-
-        if age < 3600:
-            rates = cache["rates"]
-            source = f"cache (age {int(age)} s)"
-
-    if rates is None:
-        response = requests.get(URL, params={"json": ""}, timeout=10)
-        response.raise_for_status()
-        rates = response.json()
-
-        os.makedirs("cache", exist_ok=True)
-        cache = {
-            "saved_at": datetime.now().isoformat(),
-            "rates": rates
-        }
-
-        with open(CACHE_FILE, "w", encoding="utf-8") as file:
-            json.dump(cache, file, indent=2, ensure_ascii=False)
-
-        source = "api (cache saved)"
-
-    print("source:", source)
-    print("currencies:", len(rates))
-
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
-except (OSError, ValueError, KeyError, TypeError) as error:
-    print(f"Помилка кешу або даних: {error}", file=sys.stderr)
-    sys.exit(1)
+print("\nThird example")
+wallet = Wallet("Ivan Parafin", 2000)
+print("End of program")

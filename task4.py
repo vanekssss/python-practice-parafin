@@ -1,40 +1,61 @@
-import requests
-import sys
+import csv
+from pathlib import Path
 
-print("Ivan Parafin, IT-32")
 
-mode = "connection"
-if len(sys.argv) > 1:
-    mode = sys.argv[1]
+class Wallet:
+    def __init__(self, owner, balance):
+        if not owner.strip():
+            raise ValueError("Owner can not be empty")
+        if balance < 0:
+            raise ValueError("Balance can not be negative")
 
-try:
-    if mode == "connection":
-        url = "https://this-domain-does-not-exist.invalid"
-        timeout = 10
-    elif mode == "http":
-        url = "https://bank.gov.ua/this-page-does-not-exist"
-        timeout = 10
-    elif mode == "timeout":
-        url = "https://httpbin.org/delay/3"
-        timeout = 0.001
-    else:
-        print("Використання: python task4.py connection|http|timeout",
-              file=sys.stderr)
-        sys.exit(1)
+        self.owner = owner.strip()
+        self.balance = balance
 
-    response = requests.get(url, timeout=timeout)
-    response.raise_for_status()
-    print("Запит виконано успішно")
+    @property
+    def balance(self):
+        return self.__balance
 
-except requests.ConnectionError as error:
-    print(f"Помилка з'єднання: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.Timeout as error:
-    print(f"Час очікування вичерпано: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.HTTPError as error:
-    print(f"HTTP-помилка: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
+    @balance.setter
+    def balance(self, value):
+        if value < 0:
+            raise ValueError("Balance can not be negative")
+        self.__balance = round(value, 2)
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Amount must be positive")
+        if amount > self.__balance:
+            raise ValueError("Not enough money")
+        self.__balance = round(self.__balance - amount, 2)
+
+
+budget = float(input("Enter your real monthly budget (UAH): "))
+wallet = Wallet("Ivan Parafin", budget)
+
+file_path = Path(__file__).parent / "data" / "expenses.csv"
+
+with open(file_path, "r", encoding="utf-8-sig", newline="") as file:
+    reader = csv.DictReader(file, delimiter=";")
+
+    required_columns = {"category", "amount", "comment"}
+    if not required_columns.issubset(reader.fieldnames or []):
+        raise ValueError(
+            "CSV must have columns: category;amount;comment. "
+            "Adjust the names in task4.py if your Lab 22 file uses other headers."
+        )
+
+    for row in reader:
+        category = row["category"]
+        amount = float(row["amount"].replace(",", "."))
+        comment = row["comment"]
+
+        try:
+            wallet.withdraw(amount)
+            print(f"{category}: -{amount:.2f} UAH ({comment})")
+        except ValueError:
+            print(f"Not enough money for: {category} ({amount:.2f} UAH)")
+            break
+
+print("Owner:", wallet.owner)
+print(f"Remaining balance: {wallet.balance:.2f} UAH")

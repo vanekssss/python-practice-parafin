@@ -1,23 +1,25 @@
-import requests
-import sys
+class Wallet:
+    def __init__(self, owner, balance):
+        if not owner.strip():
+            raise ValueError("Owner can not be empty")
 
-print("Ivan Parafin, IT-32")
+        if balance < 0:
+            raise ValueError("Balance can not be negative")
 
-URL = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange"
+        self.owner = owner.strip()
+        self.balance = round(balance, 2)
+
+
+wallet = Wallet("Ivan Parafin", 1500)
+print("Owner:", wallet.owner)
+print("Balance:", wallet.balance)
 
 try:
-    response = requests.get(URL, params={"json": ""}, timeout=10)
-    response.raise_for_status()
-    rates = response.json()
+    wallet1 = Wallet("", 500)
+except ValueError as error:
+    print("Error:", error)
 
-    print("status:", response.status_code)
-    print("Content-Type:", response.headers.get("Content-Type"))
-    print("currencies:", len(rates))
-
-    for item in rates:
-        if item["cc"] == "USD" or item["cc"] == "EUR":
-            print(item["cc"], item["rate"], item["exchangedate"])
-
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
+try:
+    wallet2 = Wallet("Ivan Parafin", -100)
+except ValueError as error:
+    print("Error:", error)
