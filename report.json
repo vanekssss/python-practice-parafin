@@ -1,0 +1,62 @@
+[
+    {
+        "date": "2026-11-02",
+        "category": "food",
+        "amount": "185.50",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-04",
+        "category": "transport",
+        "amount": "48.00",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-07",
+        "category": "food",
+        "amount": "230.75",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-10",
+        "category": "entertainment",
+        "amount": "299.00",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-13",
+        "category": "education",
+        "amount": "450.00",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-16",
+        "category": "food",
+        "amount": "175.25",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-19",
+        "category": "transport",
+        "amount": "60.00",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-22",
+        "category": "games",
+        "amount": "399.99",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-25",
+        "category": "food",
+        "amount": "210.00",
+        "currency": "UAH"
+    },
+    {
+        "date": "2026-11-28",
+        "category": "other",
+        "amount": "150.00",
+        "currency": "UAH"
+    }
+]

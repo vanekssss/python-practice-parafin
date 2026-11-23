@@ -1,30 +1,29 @@
-import requests
-import sys
+import csv
+from abc import ABC, abstractmethod
+from pathlib import Path
+from exporters import Exporter, HtmlExporter
 
-print("Ivan Parafin, IT-32")
 
-URL = "https://api.open-meteo.com/v1/forecast"
+class IncompleteHtmlExporter(Exporter):
+    def extension(self):
+        return "html"
 
-params = {
-    "latitude": 50.7472,
-    "longitude": 25.3254,
-    "current": "temperature_2m,wind_speed_10m"
-}
 
 try:
-    response = requests.get(URL, params=params, timeout=10)
-    response.raise_for_status()
-    data = response.json()
+    IncompleteHtmlExporter()
+except TypeError as error:
+    print("До реалізації export():", error)
 
-    current = data["current"]
-    temperature = current["temperature_2m"]
-    wind = current["wind_speed_10m"]
 
-    print(f"Lutsk (50.7472, 25.3254): {temperature} C, wind {wind} km/h")
+def load_expenses(path):
+    with open(path, newline="", encoding="utf-8") as file:
+        return list(csv.DictReader(file))
 
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
-except (KeyError, ValueError) as error:
-    print(f"Помилка обробки відповіді: {error}", file=sys.stderr)
-    sys.exit(1)
+
+if __name__ == "__main__":
+    expenses = load_expenses("expenses.csv")
+    exporter = HtmlExporter()
+    path = exporter.target("report")
+    exporter.export(expenses, path)
+    print(f"saved: {path} ({len(expenses)} records)")
+    print("Відкрийте report.html у браузері.")

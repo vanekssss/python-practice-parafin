@@ -1,40 +1,33 @@
-import requests
+import csv
 import sys
+from exporters import CsvExporter, JsonExporter, TxtExporter, HtmlExporter
 
-print("Ivan Parafin, IT-32")
 
-mode = "connection"
-if len(sys.argv) > 1:
-    mode = sys.argv[1]
+def load_expenses(path):
+    with open(path, newline="", encoding="utf-8") as file:
+        return list(csv.DictReader(file))
 
-try:
-    if mode == "connection":
-        url = "https://this-domain-does-not-exist.invalid"
-        timeout = 10
-    elif mode == "http":
-        url = "https://bank.gov.ua/this-page-does-not-exist"
-        timeout = 10
-    elif mode == "timeout":
-        url = "https://httpbin.org/delay/3"
-        timeout = 0.001
-    else:
-        print("Використання: python task4.py connection|http|timeout",
-              file=sys.stderr)
-        sys.exit(1)
 
-    response = requests.get(url, timeout=timeout)
-    response.raise_for_status()
-    print("Запит виконано успішно")
+def main():
+    available = {
+        "csv": CsvExporter(),
+        "json": JsonExporter(),
+        "txt": TxtExporter(),
+        "html": HtmlExporter()
+    }
 
-except requests.ConnectionError as error:
-    print(f"Помилка з'єднання: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.Timeout as error:
-    print(f"Час очікування вичерпано: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.HTTPError as error:
-    print(f"HTTP-помилка: {error}", file=sys.stderr)
-    sys.exit(1)
-except requests.RequestException as error:
-    print(f"Помилка запиту: {error}", file=sys.stderr)
-    sys.exit(1)
+    if len(sys.argv) != 2 or sys.argv[1] not in available:
+        print("Доступні формати:", ", ".join(available))
+        return 2
+
+    extension = sys.argv[1]
+    exporter = available[extension]
+    expenses = load_expenses("expenses.csv")
+    path = exporter.target("report")
+    exporter.export(expenses, path)
+    print(f"saved: {path} ({len(expenses)} records)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
